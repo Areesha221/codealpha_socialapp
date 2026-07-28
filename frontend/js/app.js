@@ -163,7 +163,7 @@ function initSocket() {
   if (!user || !user._id) return;
   if (socket && socket.connected) return;
 
-  socket = io('http://localhost:5000');
+  socket = io('https://codealpha-socialapp-backend.onrender.com');
   socket.on('connect', () => {
     console.log('✅ Connected to Socket.IO');
     socket.emit('join', user._id);
