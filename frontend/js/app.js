@@ -1,5 +1,5 @@
 var socket = null;
-const BACKEND_URL = 'http://localhost:5000';
+const BACKEND_URL = 'https://codealpha-socialapp-backend.onrender.com';
 let currentPage = 'feed';
 
 // Save current page
