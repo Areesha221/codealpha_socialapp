@@ -34,7 +34,8 @@ const UserSchema = new mongoose.Schema({
   },
   profileImage: {
     type: String,
-    default: 'data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect width='150' height='150' fill='%23262626'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='60' fill='%238e8e8e'%3E%3C/text%3E%3C/svg%3E'
+    // ✅ SAFE & CLEAN DEFAULT IMAGE (No quote issues)
+    default: 'https://ui-avatars.com/api/?name=User&background=262626&color=8e8e8e&size=150'
   },
   followersCount: {
     type: Number,
@@ -56,7 +57,7 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
-},{
+}, {
   timestamps: true
 });
 

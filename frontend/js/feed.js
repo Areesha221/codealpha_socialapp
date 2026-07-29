@@ -4,7 +4,7 @@ async function renderFeed() {
   if (typeof updateNavigation === 'function') {
     updateNavigation();
   }
-  
+
   const feedContent = document.getElementById('feed-content');
   if (!feedContent) return;
 
@@ -22,12 +22,12 @@ async function renderFeed() {
   // Load posts
   try {
     const postsData = await api.getFeed();
-    
+
     // ✅ SAFE ARRAY CHECK: Handle both array and { posts: [] } responses
     const posts = Array.isArray(postsData) ? postsData : (postsData.posts || []);
-    
+
     const container = document.getElementById('posts-container');
-    
+
     if (!posts || posts.length === 0) {
       container.innerHTML = `
         <div class="text-center py-5">
@@ -56,16 +56,19 @@ async function renderFeed() {
 function renderPostCard(post) {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isOwnPost = user._id === post.user._id;
-  
-  // ✅ PROFILE PICTURE & IMAGE URL FIX
+
+  // ✅ IMAGE URL FIX
   let imageUrl = post.image || '';
   if (imageUrl && !imageUrl.startsWith('http')) {
     imageUrl = `https://codealpha-socialapp-backend.onrender.com${imageUrl}`;
   }
-  
+
+  // ✅ SAFE PROFILE IMAGE CHECK (No broken quotes)
   let profileImage = post.user.profileImage || '';
-  if (!profileImage || profileImage === 'data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect width='150' height='150' fill='%23262626'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='60' fill='%238e8e8e'%3E%3C/text%3E%3C/svg%3E') {
-    profileImage = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40"%3E%3Crect width="40" height="40" fill="%23262626"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-size="20" fill="%238e8e8e"%3E👤%3C/text%3E%3C/svg%3E';
+
+  if (!profileImage || profileImage.includes('via.placeholder.com') || profileImage.includes("xmlns='")) {
+    // Clean fallback SVG with properly escaped double quotes
+    profileImage = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40"%3E%3Crect width="40" height="40" fill="%23262626"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-size="20" fill="%238e8e8e"%3E%F0%9F%91%A4%3C/text%3E%3C/svg%3E';
   } else if (!profileImage.startsWith('http')) {
     profileImage = `https://codealpha-socialapp-backend.onrender.com${profileImage}`;
   }
@@ -73,7 +76,7 @@ function renderPostCard(post) {
   return `
     <article class="card mb-4 border-0" style="background: #000; border: 1px solid #262626 !important;" data-post-id="${post._id}">
       <div class="card-header bg-transparent border-0 py-3 px-3 d-flex align-items-center">
-        <img src="${profileImage}" class="rounded-circle me-3" style="width: 32px; height: 32px; object-fit: cover;">
+        <img src="${profileImage}" class="rounded-circle me-3" style="width: 32px; height: 32px; object-fit: cover;" onerror="this.src='https://ui-avatars.com/api/?name=User&background=262626&color=8e8e8e&size=32'">
         <div class="flex-grow-1">
           <strong class="text-white">${post.user.username}</strong>
           <div class="text-muted small">${formatTime(post.createdAt)}</div>
@@ -93,7 +96,7 @@ function renderPostCard(post) {
       </div>
       
       <div class="position-relative">
-        <img src="${imageUrl}" class="card-img-top" alt="Post" style="max-height: 600px; object-fit: contain; width: 100%;">
+        <img src="${imageUrl}" class="card-img-top" alt="Post" style="max-height: 600px; object-fit: contain; width: 100%;" onerror="this.style.display='none'">
       </div>
       
       <div class="card-body bg-transparent p-3">
@@ -137,10 +140,10 @@ function renderPostCard(post) {
 
 async function handleCreatePost(e) {
   e.preventDefault();
-  
+
   const caption = document.getElementById('post-caption')?.value || '';
   const imageInput = document.getElementById('post-image');
-  
+
   if (!imageInput || !imageInput.files[0]) {
     showToast('Please select an image', 'error');
     return;
@@ -153,11 +156,11 @@ async function handleCreatePost(e) {
   try {
     await api.createPost(formData);
     showToast('Post created successfully!', 'success');
-    
+
     // Close modal if it exists
     const modal = document.querySelector('.modal');
     if (modal) modal.remove();
-    
+
     renderFeed();
   } catch (error) {
     showToast('Error creating post: ' + error.message, 'error');
@@ -167,12 +170,12 @@ async function handleCreatePost(e) {
 async function handleLike(postId) {
   try {
     const data = await api.toggleLike(postId);
-    
+
     const postCard = document.querySelector(`[data-post-id="${postId}"]`);
     if (postCard) {
       const likeBtn = postCard.querySelector('.bi-heart, .bi-heart-fill');
       const likesCountEl = postCard.querySelector('.card-body .text-white'); // More specific selector
-      
+
       if (data.isLiked) {
         likeBtn.classList.remove('bi-heart');
         likeBtn.classList.add('bi-heart-fill', 'text-danger');
@@ -180,7 +183,7 @@ async function handleLike(postId) {
         likeBtn.classList.remove('bi-heart-fill', 'text-danger');
         likeBtn.classList.add('bi-heart');
       }
-      
+
       if (likesCountEl && data.likesCount !== undefined) {
         likesCountEl.textContent = `${data.likesCount} likes`;
       }
@@ -194,16 +197,16 @@ async function handleLike(postId) {
 async function showComments(postId) {
   const commentsSection = document.getElementById(`comments-${postId}`);
   if (!commentsSection) return;
-  
+
   if (commentsSection.style.display === 'none') {
     try {
       commentsSection.innerHTML = '<div class="text-center py-2"><div class="spinner-border spinner-border-sm text-light"></div></div>';
       commentsSection.style.display = 'block';
-      
+
       const commentsData = await api.getComments(postId);
       // ✅ SAFE ARRAY CHECK
       const comments = Array.isArray(commentsData) ? commentsData : (commentsData.comments || []);
-      
+
       if (comments.length === 0) {
         commentsSection.innerHTML = '<p class="text-muted text-center">No comments yet</p>';
       } else {
@@ -223,7 +226,7 @@ function renderComment(comment) {
   if (!profileImg.startsWith('http')) {
     profileImg = `https://codealpha-socialapp-backend.onrender.com${profileImg}`;
   }
-  
+
   return `
     <div class="d-flex align-items-start mb-2">
       <img src="${profileImg}" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
@@ -238,15 +241,15 @@ function renderComment(comment) {
 
 async function handleAddComment(e, postId) {
   e.preventDefault();
-  
+
   const input = document.getElementById(`comment-input-${postId}`);
   const text = input?.value.trim();
-  
+
   if (!text) return;
 
   try {
     const comment = await api.addComment(postId, text);
-    
+
     const commentsSection = document.getElementById(`comments-${postId}`);
     if (commentsSection) {
       if (commentsSection.innerHTML.includes('No comments yet')) {
@@ -255,7 +258,7 @@ async function handleAddComment(e, postId) {
       commentsSection.innerHTML += renderComment(comment);
       commentsSection.style.display = 'block';
     }
-    
+
     if (input) input.value = '';
   } catch (error) {
     console.error('Add comment error:', error);
@@ -286,7 +289,7 @@ function formatTime(dateString) {
   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
   if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
-  
+
   return date.toLocaleDateString();
 }
 
@@ -297,7 +300,7 @@ function loadFeed() {
 function loadSuggestions() {
   const suggestionsList = document.getElementById('suggestions-list');
   if (!suggestionsList) return;
-  
+
   suggestionsList.innerHTML = '<div class="text-center py-2"><small class="text-muted">Loading...</small></div>';
 }
 
