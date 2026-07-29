@@ -1,14 +1,11 @@
-
+const BACKEND_URL = 'https://codealpha-socialapp-backend.onrender.com';
 const defaultStoryAvatar = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="60" height="60"%3E%3Crect width="60" height="60" fill="%23262626"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-size="30" fill="%238e8e8e"%3E👤%3C/text%3E%3C/svg%3E';
 
 // ✅ LOAD STORIES
 async function loadStories() {
   try {
     const storiesList = document.getElementById('stories-list');
-    if (!storiesList) {
-      console.warn('stories-list element not found');
-      return;
-    }
+    if (!storiesList) return;
 
     const userStr = localStorage.getItem('user');
     if (!userStr) {
@@ -17,10 +14,12 @@ async function loadStories() {
     }
 
     const currentUser = JSON.parse(userStr);
-
     storiesList.innerHTML = '<div class="text-center"><div class="spinner-border spinner-border-sm text-light"></div></div>';
 
-    const stories = await api.getStories();
+    const storiesData = await api.getStories();
+    
+    // ✅ SAFE ARRAY CHECK: Agar backend object return kare toh uske andar 'stories' array dhundho
+    const stories = Array.isArray(storiesData) ? storiesData : (storiesData.stories || []);
 
     if (!stories || stories.length === 0) {
       storiesList.innerHTML = '';
@@ -38,7 +37,7 @@ async function loadStories() {
     storiesList.innerHTML = Object.values(userStories).map(({ user, stories }) => {
       let profileImg = user.profileImage || '';
       if (!profileImg.startsWith('http')) {
-        profileImg = `https://codealpha-socialapp-backend.onrender.com${profileImg}`;  // ✅ Hardcode URL
+        profileImg = `${BACKEND_URL}${profileImg}`;
       }
       const storyCount = stories.length;
       const isOwnStory = user._id === currentUser._id;
@@ -61,6 +60,8 @@ async function loadStories() {
     }).join('');
   } catch (error) {
     console.error('Error loading stories:', error);
+    const storiesList = document.getElementById('stories-list');
+    if (storiesList) storiesList.innerHTML = '';
   }
 }
 
@@ -116,7 +117,7 @@ function showStoryCreationModal() {
       const file = e.target.files[0];
       if (file) {
         const formData = new FormData();
-        formData.append('storyImage', file);
+        formData.append('storyImage', file); // Backend expects 'storyImage' or 'image' based on your route
         formData.append('caption', '');
         formData.append('storyType', 'image');
         try {
@@ -184,7 +185,6 @@ function showStoryViewer(username) {
   `;
   document.body.appendChild(modal);
 
-  // Start progress
   setTimeout(() => {
     const bar = document.getElementById(`progress-${currentStoryIndex}`);
     if (bar) bar.style.width = '100%';

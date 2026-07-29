@@ -1,255 +1,172 @@
-// Backend API URL - Production
 const API_URL = 'https://codealpha-socialapp-backend.onrender.com/api';
 
-// Helper function to get auth headers with token
+// Helper: Get headers with Token
 function getAuthHeaders() {
   const token = localStorage.getItem('token');
-  return {
-    'Content-Type': 'application/json',
-    ...(token && { 'Authorization': `Bearer ${token}` })
-  };
+  const headers = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
 }
 
-// ==================== AUTHENTICATION ====================
+// ==================== AUTH ====================
 async function register(userData) {
-  const response = await fetch(`${API_URL}/auth/register`, {
+  const res = await fetch(`${API_URL}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(userData)
   });
-  return response.json();
+  return res.json();
 }
 
 async function login(credentials) {
-  const response = await fetch(`${API_URL}/auth/login`, {
+  const res = await fetch(`${API_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(credentials)
   });
-  return response.json();
+  return res.json();
 }
 
-async function getCurrentUser() {
-  const response = await fetch(`${API_URL}/auth/me`, {
+// ==================== FEED & POSTS ====================
+async function getFeed() {
+  const res = await fetch(`${API_URL}/posts/feed`, {
     method: 'GET',
     headers: getAuthHeaders()
   });
-  return response.json();
+  return res.json();
 }
 
-// ==================== USERS ====================
-async function getUsers() {
-  const response = await fetch(`${API_URL}/users`, {
-    method: 'GET',
-    headers: getAuthHeaders()
-  });
-  return response.json();
-}
-
-async function getUserById(userId) {
-  const response = await fetch(`${API_URL}/users/${userId}`, {
-    method: 'GET',
-    headers: getAuthHeaders()
-  });
-  return response.json();
-}
-
-async function updateUser(userId, userData) {
-  const response = await fetch(`${API_URL}/users/${userId}`, {
-    method: 'PUT',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(userData)
-  });
-  return response.json();
-}
-
-async function searchUsers(query) {
-  const response = await fetch(`${API_URL}/users/search?q=${query}`, {
-    method: 'GET',
-    headers: getAuthHeaders()
-  });
-  return response.json();
-}
-
-async function followUser(userId) {
-  const response = await fetch(`${API_URL}/users/${userId}/follow`, {
-    method: 'POST',
-    headers: getAuthHeaders()
-  });
-  return response.json();
-}
-
-// ==================== POSTS ====================
-async function getPosts(page = 1, limit = 10) {
-  const response = await fetch(`${API_URL}/posts/feed?page=${page}&limit=${limit}`, {
-    method: 'GET',
-    headers: getAuthHeaders()
-  });
-  return response.json();
-}
-
-async function getPostById(postId) {
-  const response = await fetch(`${API_URL}/posts/${postId}`, {
-    method: 'GET',
-    headers: getAuthHeaders()
-  });
-  return response.json();
-}
-
-async function createPost(postData) {
-  const response = await fetch(`${API_URL}/posts`, {
+async function createPost(formData) {
+  // NOTE: FormData ke saath 'Content-Type' manually set NAHI karte, browser khud boundary set karta hai
+  const res = await fetch(`${API_URL}/posts`, {
     method: 'POST',
     headers: getAuthHeaders(),
-    body: JSON.stringify(postData)
+    body: formData
   });
-  return response.json();
+  return res.json();
 }
 
 async function deletePost(postId) {
-  const response = await fetch(`${API_URL}/posts/${postId}`, {
+  const res = await fetch(`${API_URL}/posts/${postId}`, {
     method: 'DELETE',
     headers: getAuthHeaders()
   });
-  return response.json();
+  return res.json();
 }
 
-async function likePost(postId) {
-  const response = await fetch(`${API_URL}/posts/${postId}/like`, {
+async function toggleLike(postId) {
+  const res = await fetch(`${API_URL}/posts/${postId}/like`, {
     method: 'POST',
     headers: getAuthHeaders()
   });
-  return response.json();
-}
-
-// ==================== STORIES ====================
-async function getStories() {
-  const response = await fetch(`${API_URL}/stories`, {
-    method: 'GET',
-    headers: getAuthHeaders()
-  });
-  return response.json();
-}
-
-async function createStory(storyData) {
-  const response = await fetch(`${API_URL}/stories`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(storyData)
-  });
-  return response.json();
-}
-
-async function deleteStory(storyId) {
-  const response = await fetch(`${API_URL}/stories/${storyId}`, {
-    method: 'DELETE',
-    headers: getAuthHeaders()
-  });
-  return response.json();
-}
-
-// ==================== MESSAGES ====================
-async function getConversations() {
-  const response = await fetch(`${API_URL}/messages/conversations`, {
-    method: 'GET',
-    headers: getAuthHeaders()
-  });
-  return response.json();
-}
-
-async function getMessages(userId) {
-  const response = await fetch(`${API_URL}/messages/${userId}`, {
-    method: 'GET',
-    headers: getAuthHeaders()
-  });
-  return response.json();
-}
-
-async function sendMessage(receiverId, text) {
-  const response = await fetch(`${API_URL}/messages`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify({ receiverId, text })
-  });
-  return response.json();
-}
-
-// ==================== NOTIFICATIONS ====================
-async function getNotifications() {
-  const response = await fetch(`${API_URL}/notifications`, {
-    method: 'GET',
-    headers: getAuthHeaders()
-  });
-  return response.json();
-}
-
-async function markNotificationAsRead(notificationId) {
-  const response = await fetch(`${API_URL}/notifications/${notificationId}/read`, {
-    method: 'POST',
-    headers: getAuthHeaders()
-  });
-  return response.json();
+  return res.json();
 }
 
 // ==================== COMMENTS ====================
 async function getComments(postId) {
-  const response = await fetch(`${API_URL}/comments/post/${postId}`, {
+  const res = await fetch(`${API_URL}/comments/post/${postId}`, {
     method: 'GET',
     headers: getAuthHeaders()
   });
-  return response.json();
+  return res.json();
 }
 
-async function createComment(postId, commentData) {
-  const response = await fetch(`${API_URL}/comments/post/${postId}`, {
+async function addComment(postId, text) {
+  const res = await fetch(`${API_URL}/comments/post/${postId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    body: JSON.stringify({ text })
+  });
+  return res.json();
+}
+
+// ==================== STORIES ====================
+async function getStories() {
+  const res = await fetch(`${API_URL}/stories`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
+  return res.json();
+}
+
+async function createStory(formData) {
+  const res = await fetch(`${API_URL}/stories`, {
     method: 'POST',
     headers: getAuthHeaders(),
-    body: JSON.stringify(commentData)
+    body: formData
   });
-  return response.json();
+  return res.json();
 }
 
-async function deleteComment(commentId) {
-  const response = await fetch(`${API_URL}/comments/${commentId}`, {
-    method: 'DELETE',
+// ==================== USERS ====================
+async function searchUsers(query) {
+  const res = await fetch(`${API_URL}/users/search?q=${query}`, {
+    method: 'GET',
     headers: getAuthHeaders()
   });
-  return response.json();
+  return res.json();
 }
 
-// ==================== LIKES ====================
-async function unlikePost(postId) {
-  const response = await fetch(`${API_URL}/likes/${postId}`, {
-    method: 'DELETE',
+async function getUserProfile(userId) {
+  const res = await fetch(`${API_URL}/users/${userId}`, {
+    method: 'GET',
     headers: getAuthHeaders()
   });
-  return response.json();
+  return res.json();
 }
 
-// ==================== EXPORT TO WINDOW (GLOBAL ACCESS) ====================
+async function toggleFollow(userId) {
+  const res = await fetch(`${API_URL}/users/${userId}/follow`, {
+    method: 'POST',
+    headers: getAuthHeaders()
+  });
+  return res.json();
+}
+
+// ==================== MESSAGES ====================
+async function getConversations() {
+  const res = await fetch(`${API_URL}/messages/conversations`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
+  return res.json();
+}
+
+async function getMessages(userId) {
+  const res = await fetch(`${API_URL}/messages/${userId}`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
+  return res.json();
+}
+
+async function sendMessage(receiverId, text) {
+  const res = await fetch(`${API_URL}/messages`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    body: JSON.stringify({ receiverId, text })
+  });
+  return res.json();
+}
+
+// ==================== EXPORT TO WINDOW ====================
 window.api = {
   register,
   login,
-  getCurrentUser,
-  getUsers,
-  getUserById,
-  updateUser,
-  searchUsers,
-  followUser,
-  getPosts,
-  getPostById,
+  getFeed,
   createPost,
   deletePost,
-  likePost,
+  toggleLike,
+  getComments,
+  addComment,
   getStories,
   createStory,
-  deleteStory,
+  searchUsers,
+  getUserProfile,
+  toggleFollow,
   getConversations,
   getMessages,
-  sendMessage,
-  getNotifications,
-  markNotificationAsRead,
-  getComments,
-  createComment,
-  deleteComment,
-  unlikePost
+  sendMessage
 };
