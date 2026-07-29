@@ -11,7 +11,7 @@ function getAuthHeaders() {
 }
 
 // ==================== AUTHENTICATION ====================
-export async function register(userData) {
+async function register(userData) {
   const response = await fetch(`${API_URL}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -20,7 +20,7 @@ export async function register(userData) {
   return response.json();
 }
 
-export async function login(credentials) {
+async function login(credentials) {
   const response = await fetch(`${API_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -29,7 +29,7 @@ export async function login(credentials) {
   return response.json();
 }
 
-export async function getCurrentUser() {
+async function getCurrentUser() {
   const response = await fetch(`${API_URL}/auth/me`, {
     method: 'GET',
     headers: getAuthHeaders()
@@ -38,7 +38,7 @@ export async function getCurrentUser() {
 }
 
 // ==================== USERS ====================
-export async function getUsers() {
+async function getUsers() {
   const response = await fetch(`${API_URL}/users`, {
     method: 'GET',
     headers: getAuthHeaders()
@@ -46,7 +46,7 @@ export async function getUsers() {
   return response.json();
 }
 
-export async function getUserById(userId) {
+async function getUserById(userId) {
   const response = await fetch(`${API_URL}/users/${userId}`, {
     method: 'GET',
     headers: getAuthHeaders()
@@ -54,7 +54,7 @@ export async function getUserById(userId) {
   return response.json();
 }
 
-export async function updateUser(userId, userData) {
+async function updateUser(userId, userData) {
   const response = await fetch(`${API_URL}/users/${userId}`, {
     method: 'PUT',
     headers: getAuthHeaders(),
@@ -63,7 +63,7 @@ export async function updateUser(userId, userData) {
   return response.json();
 }
 
-export async function searchUsers(query) {
+async function searchUsers(query) {
   const response = await fetch(`${API_URL}/users/search?q=${query}`, {
     method: 'GET',
     headers: getAuthHeaders()
@@ -71,7 +71,7 @@ export async function searchUsers(query) {
   return response.json();
 }
 
-export async function followUser(userId) {
+async function followUser(userId) {
   const response = await fetch(`${API_URL}/users/${userId}/follow`, {
     method: 'POST',
     headers: getAuthHeaders()
@@ -80,7 +80,7 @@ export async function followUser(userId) {
 }
 
 // ==================== POSTS ====================
-export async function getPosts(page = 1, limit = 10) {
+async function getPosts(page = 1, limit = 10) {
   const response = await fetch(`${API_URL}/posts/feed?page=${page}&limit=${limit}`, {
     method: 'GET',
     headers: getAuthHeaders()
@@ -88,7 +88,7 @@ export async function getPosts(page = 1, limit = 10) {
   return response.json();
 }
 
-export async function getPostById(postId) {
+async function getPostById(postId) {
   const response = await fetch(`${API_URL}/posts/${postId}`, {
     method: 'GET',
     headers: getAuthHeaders()
@@ -96,7 +96,7 @@ export async function getPostById(postId) {
   return response.json();
 }
 
-export async function createPost(postData) {
+async function createPost(postData) {
   const response = await fetch(`${API_URL}/posts`, {
     method: 'POST',
     headers: getAuthHeaders(),
@@ -105,7 +105,7 @@ export async function createPost(postData) {
   return response.json();
 }
 
-export async function deletePost(postId) {
+async function deletePost(postId) {
   const response = await fetch(`${API_URL}/posts/${postId}`, {
     method: 'DELETE',
     headers: getAuthHeaders()
@@ -113,7 +113,7 @@ export async function deletePost(postId) {
   return response.json();
 }
 
-export async function likePost(postId) {
+async function likePost(postId) {
   const response = await fetch(`${API_URL}/posts/${postId}/like`, {
     method: 'POST',
     headers: getAuthHeaders()
@@ -122,7 +122,7 @@ export async function likePost(postId) {
 }
 
 // ==================== STORIES ====================
-export async function getStories() {
+async function getStories() {
   const response = await fetch(`${API_URL}/stories`, {
     method: 'GET',
     headers: getAuthHeaders()
@@ -130,7 +130,7 @@ export async function getStories() {
   return response.json();
 }
 
-export async function createStory(storyData) {
+async function createStory(storyData) {
   const response = await fetch(`${API_URL}/stories`, {
     method: 'POST',
     headers: getAuthHeaders(),
@@ -139,7 +139,7 @@ export async function createStory(storyData) {
   return response.json();
 }
 
-export async function deleteStory(storyId) {
+async function deleteStory(storyId) {
   const response = await fetch(`${API_URL}/stories/${storyId}`, {
     method: 'DELETE',
     headers: getAuthHeaders()
@@ -148,7 +148,7 @@ export async function deleteStory(storyId) {
 }
 
 // ==================== MESSAGES ====================
-export async function getConversations() {
+async function getConversations() {
   const response = await fetch(`${API_URL}/messages/conversations`, {
     method: 'GET',
     headers: getAuthHeaders()
@@ -156,7 +156,7 @@ export async function getConversations() {
   return response.json();
 }
 
-export async function getMessages(userId) {
+async function getMessages(userId) {
   const response = await fetch(`${API_URL}/messages/${userId}`, {
     method: 'GET',
     headers: getAuthHeaders()
@@ -164,7 +164,7 @@ export async function getMessages(userId) {
   return response.json();
 }
 
-export async function sendMessage(receiverId, text) {
+async function sendMessage(receiverId, text) {
   const response = await fetch(`${API_URL}/messages`, {
     method: 'POST',
     headers: getAuthHeaders(),
@@ -174,7 +174,7 @@ export async function sendMessage(receiverId, text) {
 }
 
 // ==================== NOTIFICATIONS ====================
-export async function getNotifications() {
+async function getNotifications() {
   const response = await fetch(`${API_URL}/notifications`, {
     method: 'GET',
     headers: getAuthHeaders()
@@ -182,7 +182,7 @@ export async function getNotifications() {
   return response.json();
 }
 
-export async function markNotificationAsRead(notificationId) {
+async function markNotificationAsRead(notificationId) {
   const response = await fetch(`${API_URL}/notifications/${notificationId}/read`, {
     method: 'POST',
     headers: getAuthHeaders()
@@ -191,7 +191,7 @@ export async function markNotificationAsRead(notificationId) {
 }
 
 // ==================== COMMENTS ====================
-export async function getComments(postId) {
+async function getComments(postId) {
   const response = await fetch(`${API_URL}/comments/post/${postId}`, {
     method: 'GET',
     headers: getAuthHeaders()
@@ -199,7 +199,7 @@ export async function getComments(postId) {
   return response.json();
 }
 
-export async function createComment(postId, commentData) {
+async function createComment(postId, commentData) {
   const response = await fetch(`${API_URL}/comments/post/${postId}`, {
     method: 'POST',
     headers: getAuthHeaders(),
@@ -208,7 +208,7 @@ export async function createComment(postId, commentData) {
   return response.json();
 }
 
-export async function deleteComment(commentId) {
+async function deleteComment(commentId) {
   const response = await fetch(`${API_URL}/comments/${commentId}`, {
     method: 'DELETE',
     headers: getAuthHeaders()
@@ -217,7 +217,7 @@ export async function deleteComment(commentId) {
 }
 
 // ==================== LIKES ====================
-export async function unlikePost(postId) {
+async function unlikePost(postId) {
   const response = await fetch(`${API_URL}/likes/${postId}`, {
     method: 'DELETE',
     headers: getAuthHeaders()
@@ -225,7 +225,7 @@ export async function unlikePost(postId) {
   return response.json();
 }
 
-// Export all functions to window for global access
+// ==================== EXPORT TO WINDOW (GLOBAL ACCESS) ====================
 window.api = {
   register,
   login,
