@@ -104,7 +104,8 @@ async function handleLogin(e) {
   const password = document.getElementById('login-password').value;
   
   try {
-    const response = await fetch('http://localhost:5000/api/auth/login', {
+    // ✅ FIXED: Updated to Render Production URL
+    const response = await fetch('https://codealpha-socialapp-backend.onrender.com/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
@@ -126,7 +127,6 @@ async function handleLogin(e) {
       
       if (typeof showToast === 'function') showToast('Logged in successfully!', 'success');
       
-      // ✅ CRITICAL FIX: Check if we are adding a new account (from Account Switcher)
       if (typeof window.finalizeAccountSwitch === 'function') {
         window.finalizeAccountSwitch(userToSave);
       } else {
@@ -153,7 +153,8 @@ async function handleRegister(e) {
   const password = document.getElementById('register-password').value;
   
   try {
-    const response = await fetch('http://localhost:5000/api/auth/register', {
+    // ✅ FIXED: Updated to Render Production URL
+    const response = await fetch('https://codealpha-socialapp-backend.onrender.com/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, fullName, username, password })
@@ -171,7 +172,6 @@ async function handleRegister(e) {
       
       if (typeof showToast === 'function') showToast('Account created!', 'success');
       
-      // ✅ CRITICAL FIX: Check if we are adding a new account (from Account Switcher)
       if (typeof window.finalizeAccountSwitch === 'function') {
         window.finalizeAccountSwitch(userToSave);
       } else {

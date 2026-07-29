@@ -48,7 +48,7 @@ async function loadNotifications() {
     container.innerHTML = notifications.map(notif => {
       let senderImg = notif.sender.profileImage || '';
       if (!senderImg.startsWith('http')) {
-        senderImg = `http://localhost:5000${senderImg}`;
+        senderImg = `https://codealpha-socialapp-backend.onrender.com${senderImg}`;
       }
       
       let actionText = '';

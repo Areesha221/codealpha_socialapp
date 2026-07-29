@@ -47,12 +47,12 @@ async function loadExplorePosts() {
     grid.innerHTML = shuffledPosts.map(post => {
       let imageUrl = post.image || '';
       if (!imageUrl.startsWith('http')) {
-        imageUrl = `http://localhost:5000${imageUrl}`;
+        imageUrl = `https://codealpha-socialapp-backend.onrender.com${imageUrl}`;
       }
       
       let userImg = post.user?.profileImage || '';
       if (!userImg.startsWith('http')) {
-        userImg = `http://localhost:5000${userImg}`;
+        userImg = `https://codealpha-socialapp-backend.onrender.com${userImg}`;
       }
       
       const username = post.user?.username || 'user';

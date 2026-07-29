@@ -13,7 +13,7 @@ async function renderProfile(userId) {
     const isOwnProfile = currentUser._id === userId;
 
     let profileImage = data.user.profileImage || '';
-    if (!profileImage.startsWith('http')) profileImage = `http://localhost:5000${profileImage}`;
+    if (!profileImage.startsWith('http')) profileImage = `https://codealpha-socialapp-backend.onrender.com${profileImage}`;
 
     const highlights = JSON.parse(localStorage.getItem(`highlights_${userId}`) || '[]');
 
@@ -98,7 +98,7 @@ async function renderProfile(userId) {
         <div class="profile-posts-grid" id="profile-posts-grid">
           ${data.posts && data.posts.length > 0 ? data.posts.map(post => {
       let postImage = post.image || '';
-      if (!postImage.startsWith('http')) postImage = `http://localhost:5000${postImage}`;
+      if (!postImage.startsWith('http')) postImage = `https://codealpha-socialapp-backend.onrender.com${postImage}`;
       return `<div class="profile-post-item" onclick="viewPost('${post._id}')"><img src="${postImage}" alt="Post"></div>`;
     }).join('') : `<div class="no-posts"><i class="bi bi-camera"></i><h5>No Posts Yet</h5></div>`}
         </div>
@@ -296,7 +296,7 @@ function showAccountSwitcher() {
     // Fix profile image URL
     let profileImg = acc.profileImage || '';
     if (profileImg && !profileImg.startsWith('http')) {
-      profileImg = 'http://localhost:5000' + profileImg;
+      profileImg = 'https://codealpha-socialapp-backend.onrender.com' + profileImg;
     }
 
     return `
@@ -563,7 +563,7 @@ function showArchivedStories() {
               <div class="row g-3">
                 ${archived.map(story => {
       let img = story.image;
-      if (!img.startsWith('http')) img = `http://localhost:5000${img}`;
+      if (!img.startsWith('http')) img = `https://codealpha-socialapp-backend.onrender.com${img}`;
       return `<div class="col-md-4"><div class="card bg-dark border-secondary"><img src="${img}" class="card-img-top" style="max-height:200px;object-fit:cover;"><div class="card-body"><small class="text-muted">${new Date(story.createdAt).toLocaleString()}</small>${story.caption ? `<p class="mt-2 mb-0 text-white small">${story.caption}</p>` : ''}</div></div></div>`;
     }).join('')}
               </div>`}

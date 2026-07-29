@@ -508,7 +508,7 @@ async function handleGlobalSearch(query) {
       <div class="list-group">
         ${users.map(user => {
       let img = user.profileImage || '';
-      if (!img.startsWith('http')) img = `http://localhost:5000${img}`;
+      if (!img.startsWith('http')) img = `https://codealpha-socialapp-backend.onrender.com${img}`;
       return `
             <div class="list-group-item list-group-item-action bg-dark border-secondary text-white p-3 mb-2" 
                  style="cursor:pointer;" onclick="navigate('profile', '${user._id}')">

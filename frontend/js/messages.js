@@ -100,7 +100,7 @@ async function loadNotes() {
     
     const notesHtml = conversations.map(conv => {
       let userImg = conv.user.profileImage || '';
-      if (!userImg.startsWith('http')) userImg = `http://localhost:5000${userImg}`;
+      if (!userImg.startsWith('http')) userImg = `https://codealpha-socialapp-backend.onrender.com${userImg}`;
       const note = localStorage.getItem(`note_${conv.user._id}`) || '';
       
       return `
@@ -134,7 +134,7 @@ async function loadConversations() {
     
     container.innerHTML = conversations.map(conv => {
       let userImg = conv.user.profileImage || '';
-      if (!userImg.startsWith('http')) userImg = `http://localhost:5000${userImg}`;
+      if (!userImg.startsWith('http')) userImg = `https://codealpha-socialapp-backend.onrender.com${userImg}`;
       const isOnline = conv.user.isOnline || false;
       
       return `
@@ -178,7 +178,7 @@ async function openChat(userId, username, profileImage, isOnline) {
   document.getElementById('chat-username').textContent = username;
   
   let img = profileImage || '';
-  if (!img.startsWith('http')) img = `http://localhost:5000${img}`;
+  if (!img.startsWith('http')) img = `https://codealpha-socialapp-backend.onrender.com${img}`;
   document.getElementById('chat-user-avatar').src = img;
   
   const statusDot = document.getElementById('chat-user-status');
@@ -297,7 +297,7 @@ function showNewMessageModal() {
       } else {
         resultsDiv.innerHTML = users.map(user => {
           let img = user.profileImage || '';
-          if (!img.startsWith('http')) img = `http://localhost:5000${img}`;
+          if (!img.startsWith('http')) img = `https://codealpha-socialapp-backend.onrender.com${img}`;
           return `
             <div class="conversation-item" onclick="startNewConversation('${user._id}', '${user.username}', '${user.profileImage}')">
               <div class="conversation-avatar"><img src="${img}" alt=""></div>

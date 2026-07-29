@@ -56,14 +56,14 @@ function renderPostCard(post) {
   // ✅ PROFILE PICTURE FIX
   let imageUrl = post.image || '';
   if (!imageUrl.startsWith('http')) {
-    imageUrl = `http://localhost:5000${imageUrl}`;
+    imageUrl = `https://codealpha-socialapp-backend.onrender.com${imageUrl}`;
   }
   
   let profileImage = post.user.profileImage || '';
   if (!profileImage || profileImage === 'https://via.placeholder.com/150') {
     profileImage = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40"%3E%3Crect width="40" height="40" fill="%23262626"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-size="20" fill="%238e8e8e"%3E👤%3C/text%3E%3C/svg%3E';
   } else if (!profileImage.startsWith('http')) {
-    profileImage = `http://localhost:5000${profileImage}`;
+    profileImage = `https://codealpha-socialapp-backend.onrender.com${profileImage}`;
   }
 
   return `
@@ -209,7 +209,7 @@ async function showComments(postId) {
 function renderComment(comment) {
   let profileImg = comment.user.profileImage || '';
   if (!profileImg.startsWith('http')) {
-    profileImg = `http://localhost:5000${profileImg}`;
+    profileImg = `https://codealpha-socialapp-backend.onrender.com${profileImg}`;
   }
   
   return `

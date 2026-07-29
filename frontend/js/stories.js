@@ -38,7 +38,7 @@ async function loadStories() {
     storiesList.innerHTML = Object.values(userStories).map(({ user, stories }) => {
       let profileImg = user.profileImage || '';
       if (!profileImg.startsWith('http')) {
-        profileImg = `http://localhost:5000${profileImg}`;  // ✅ Hardcode URL
+        profileImg = `https://codealpha-socialapp-backend.onrender.com${profileImg}`;  // ✅ Hardcode URL
       }
       const storyCount = stories.length;
       const isOwnStory = user._id === currentUser._id;
