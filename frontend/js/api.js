@@ -1,249 +1,255 @@
+// Backend API URL - Production
 const API_URL = 'https://codealpha-socialapp-backend.onrender.com/api';
 
-// API Helper Functions
-const api = {
-    // ============ AUTH ============
-    async register(userData) {
-        const response = await fetch(`${API_URL}/auth/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(userData)
-        });
-        return await response.json();
-    },
+// Helper function to get auth headers with token
+function getAuthHeaders() {
+  const token = localStorage.getItem('token');
+  return {
+    'Content-Type': 'application/json',
+    ...(token && { 'Authorization': `Bearer ${token}` })
+  };
+}
 
-    async login(credentials) {
-        const response = await fetch(`${API_URL}/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(credentials)
-        });
-        return await response.json();
-    },
+// ==================== AUTHENTICATION ====================
+export async function register(userData) {
+  const response = await fetch(`${API_URL}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(userData)
+  });
+  return response.json();
+}
 
-    async getMe() {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/auth/me`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        return await response.json();
-    },
+export async function login(credentials) {
+  const response = await fetch(`${API_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(credentials)
+  });
+  return response.json();
+}
 
-    // ============ USERS ============
-    async getUserProfile(userId) {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/users/${userId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        return await response.json();
-    },
+export async function getCurrentUser() {
+  const response = await fetch(`${API_URL}/auth/me`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
+  return response.json();
+}
 
-    async updateProfile(profileData) {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/users/profile`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(profileData)
-        });
-        return await response.json();
-    },
+// ==================== USERS ====================
+export async function getUsers() {
+  const response = await fetch(`${API_URL}/users`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
+  return response.json();
+}
 
-    async searchUsers(query) {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/users/search?query=${encodeURIComponent(query)}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        return await response.json();
-    },
+export async function getUserById(userId) {
+  const response = await fetch(`${API_URL}/users/${userId}`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
+  return response.json();
+}
 
-    // ============ FOLLOW ============
-    async toggleFollow(userId) {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/follow/${userId}`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        return await response.json();
-    },
+export async function updateUser(userId, userData) {
+  const response = await fetch(`${API_URL}/users/${userId}`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(userData)
+  });
+  return response.json();
+}
 
-    // ============ POSTS ============
-    async getFeed(page = 1, limit = 10) {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/posts/feed?page=${page}&limit=${limit}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        return await response.json();
-    },
+export async function searchUsers(query) {
+  const response = await fetch(`${API_URL}/users/search?q=${query}`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
+  return response.json();
+}
 
-    async createPost(formData) {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/posts`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` },
-            body: formData
-        });
-        return await response.json();
-    },
+export async function followUser(userId) {
+  const response = await fetch(`${API_URL}/users/${userId}/follow`, {
+    method: 'POST',
+    headers: getAuthHeaders()
+  });
+  return response.json();
+}
 
-    async getPost(postId) {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/posts/${postId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        return await response.json();
-    },
+// ==================== POSTS ====================
+export async function getPosts(page = 1, limit = 10) {
+  const response = await fetch(`${API_URL}/posts/feed?page=${page}&limit=${limit}`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
+  return response.json();
+}
 
-    async updatePost(postId, data) {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/posts/${postId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(data)
-        });
-        return await response.json();
-    },
+export async function getPostById(postId) {
+  const response = await fetch(`${API_URL}/posts/${postId}`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
+  return response.json();
+}
 
-    async deletePost(postId) {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/posts/${postId}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        return await response.json();
-    },
+export async function createPost(postData) {
+  const response = await fetch(`${API_URL}/posts`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(postData)
+  });
+  return response.json();
+}
 
-    // ============ LIKES ============
-    async toggleLike(postId) {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/likes/${postId}`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        return await response.json();
-    },
+export async function deletePost(postId) {
+  const response = await fetch(`${API_URL}/posts/${postId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders()
+  });
+  return response.json();
+}
 
-    // ============ COMMENTS ============
-    async getComments(postId) {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/comments/${postId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        return await response.json();
-    },
+export async function likePost(postId) {
+  const response = await fetch(`${API_URL}/posts/${postId}/like`, {
+    method: 'POST',
+    headers: getAuthHeaders()
+  });
+  return response.json();
+}
 
-    async addComment(postId, text) {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/comments/${postId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ text })
-        });
-        return await response.json();
-    },
+// ==================== STORIES ====================
+export async function getStories() {
+  const response = await fetch(`${API_URL}/stories`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
+  return response.json();
+}
 
-    async deleteComment(commentId) {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/comments/${commentId}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        return await response.json();
-    },
+export async function createStory(storyData) {
+  const response = await fetch(`${API_URL}/stories`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(storyData)
+  });
+  return response.json();
+}
 
-    // ============ NOTIFICATIONS ============
-    async getNotifications() {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/notifications`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        return await response.json();
-    },
+export async function deleteStory(storyId) {
+  const response = await fetch(`${API_URL}/stories/${storyId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders()
+  });
+  return response.json();
+}
 
-    async markNotificationAsRead(notificationId) {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/notifications/${notificationId}/read`, {
-            method: 'PUT',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        return await response.json();
-    },
+// ==================== MESSAGES ====================
+export async function getConversations() {
+  const response = await fetch(`${API_URL}/messages/conversations`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
+  return response.json();
+}
 
-    async uploadProfileImage(formData) {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/users/profile-image`, {
-            method: 'PUT',
-            headers: { 'Authorization': `Bearer ${token}` },
-            body: formData
-        });
-        return await response.json();
-    },
+export async function getMessages(userId) {
+  const response = await fetch(`${API_URL}/messages/${userId}`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
+  return response.json();
+}
 
-    // Messages
-    // Messages APIs
-    async getConversations() {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/messages/conversations`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        return await response.json();
-    },
+export async function sendMessage(receiverId, text) {
+  const response = await fetch(`${API_URL}/messages`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ receiverId, text })
+  });
+  return response.json();
+}
 
-    async getMessages(userId) {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/messages/${userId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        return await response.json();
-    },
+// ==================== NOTIFICATIONS ====================
+export async function getNotifications() {
+  const response = await fetch(`${API_URL}/notifications`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
+  return response.json();
+}
 
-    async sendMessage(receiverId, text) {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/messages`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ receiverId, text })
-        });
-        return await response.json();
-    },
+export async function markNotificationAsRead(notificationId) {
+  const response = await fetch(`${API_URL}/notifications/${notificationId}/read`, {
+    method: 'POST',
+    headers: getAuthHeaders()
+  });
+  return response.json();
+}
 
-    // Stories
-    async getStories() {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/stories`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        return await response.json();
-    },
+// ==================== COMMENTS ====================
+export async function getComments(postId) {
+  const response = await fetch(`${API_URL}/comments/post/${postId}`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
+  return response.json();
+}
 
-    async createStory(formData) {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/stories`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` },
-            body: formData
-        });
-        return await response.json();
-    },
+export async function createComment(postId, commentData) {
+  const response = await fetch(`${API_URL}/comments/post/${postId}`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(commentData)
+  });
+  return response.json();
+}
 
-    async viewStory(storyId) {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/stories/${storyId}/view`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        return await response.json();
-    }
+export async function deleteComment(commentId) {
+  const response = await fetch(`${API_URL}/comments/${commentId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders()
+  });
+  return response.json();
+}
+
+// ==================== LIKES ====================
+export async function unlikePost(postId) {
+  const response = await fetch(`${API_URL}/likes/${postId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders()
+  });
+  return response.json();
+}
+
+// Export all functions to window for global access
+window.api = {
+  register,
+  login,
+  getCurrentUser,
+  getUsers,
+  getUserById,
+  updateUser,
+  searchUsers,
+  followUser,
+  getPosts,
+  getPostById,
+  createPost,
+  deletePost,
+  likePost,
+  getStories,
+  createStory,
+  deleteStory,
+  getConversations,
+  getMessages,
+  sendMessage,
+  getNotifications,
+  markNotificationAsRead,
+  getComments,
+  createComment,
+  deleteComment,
+  unlikePost
 };
-
-window.api = api;
