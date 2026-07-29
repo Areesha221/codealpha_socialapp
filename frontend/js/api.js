@@ -3,10 +3,16 @@ const API_URL = 'https://codealpha-socialapp-backend.onrender.com/api';
 // Helper: Get headers with Token
 function getAuthHeaders() {
   const token = localStorage.getItem('token');
-  const headers = {};
+  console.log('Token:', token); // Debug ke liye
+
+  const headers = {
+    'Content-Type': 'application/json'
+  };
+
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
+
   return headers;
 }
 
