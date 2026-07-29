@@ -64,7 +64,7 @@ function renderPostCard(post) {
   }
   
   let profileImage = post.user.profileImage || '';
-  if (!profileImage || profileImage === 'https://via.placeholder.com/150') {
+  if (!profileImage || profileImage === 'data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect width='150' height='150' fill='%23262626'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='60' fill='%238e8e8e'%3E%3C/text%3E%3C/svg%3E') {
     profileImage = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40"%3E%3Crect width="40" height="40" fill="%23262626"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-size="20" fill="%238e8e8e"%3E👤%3C/text%3E%3C/svg%3E';
   } else if (!profileImage.startsWith('http')) {
     profileImage = `https://codealpha-socialapp-backend.onrender.com${profileImage}`;
