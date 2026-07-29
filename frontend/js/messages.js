@@ -94,17 +94,20 @@ async function renderMessages() {
 
 async function loadNotes() {
   try {
-    const conversations = await api.getConversations();
+    const convData = await api.getConversations();
+    // ✅ SAFE ARRAY CHECK
+    const conversations = Array.isArray(convData) ? convData : (convData.conversations || []);
+    
     const notesWrapper = document.getElementById('notes-wrapper');
     if (!notesWrapper || !conversations) return;
     
     const notesHtml = conversations.map(conv => {
-      let userImg = conv.user.profileImage || '';
+      let userImg = conv.user?.profileImage || '';
       if (!userImg.startsWith('http')) userImg = `https://codealpha-socialapp-backend.onrender.com${userImg}`;
-      const note = localStorage.getItem(`note_${conv.user._id}`) || '';
+      const note = localStorage.getItem(`note_${conv.user?._id}`) || '';
       
       return `
-        <div class="note-item" onclick="openChat('${conv.user._id}', '${conv.user.username}', '${conv.user.profileImage}', '${conv.user.isOnline || false}')">
+        <div class="note-item" onclick="openChat('${conv.user._id}', '${conv.user.username}', '${conv.user.profileImage || ''}', '${conv.user.isOnline || false}')">
           ${note ? `
             <div class="note-bubble">${note}</div>
           ` : `
@@ -123,7 +126,10 @@ async function loadNotes() {
 
 async function loadConversations() {
   try {
-    const conversations = await api.getConversations();
+    const convData = await api.getConversations();
+    // ✅ SAFE ARRAY CHECK
+    const conversations = Array.isArray(convData) ? convData : (convData.conversations || []);
+    
     const container = document.getElementById('conversations-list');
     if (!container) return;
     
@@ -133,13 +139,13 @@ async function loadConversations() {
     }
     
     container.innerHTML = conversations.map(conv => {
-      let userImg = conv.user.profileImage || '';
+      let userImg = conv.user?.profileImage || '';
       if (!userImg.startsWith('http')) userImg = `https://codealpha-socialapp-backend.onrender.com${userImg}`;
-      const isOnline = conv.user.isOnline || false;
+      const isOnline = conv.user?.isOnline || false;
       
       return `
-        <div class="conversation-item" data-username="${conv.user.username.toLowerCase()}"
-             onclick="openChat('${conv.user._id}', '${conv.user.username}', '${conv.user.profileImage}', '${isOnline}')">
+        <div class="conversation-item" data-username="${(conv.user?.username || '').toLowerCase()}"
+             onclick="openChat('${conv.user._id}', '${conv.user.username}', '${conv.user.profileImage || ''}', '${isOnline}')">
           <div class="conversation-avatar">
             <img src="${userImg}" alt="">
             <span class="status-indicator ${isOnline ? 'online' : 'offline'}"></span>
@@ -200,7 +206,10 @@ async function openChat(userId, username, profileImage, isOnline) {
 
 async function loadMessages(userId) {
   try {
-    const messages = await api.getMessages(userId);
+    const msgData = await api.getMessages(userId);
+    // ✅ SAFE ARRAY CHECK
+    const messages = Array.isArray(msgData) ? msgData : (msgData.messages || []);
+    
     const container = document.getElementById('messages-container');
     if (!container) return;
     
@@ -212,7 +221,7 @@ async function loadMessages(userId) {
     const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
     
     container.innerHTML = messages.map(msg => {
-      const isSender = msg.sender._id === currentUser._id;
+      const isSender = msg.sender?._id === currentUser._id;
       const time = new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
       
       return `
@@ -243,7 +252,7 @@ async function handleSendMessage(e) {
     await loadMessages(currentChat);
     await loadConversations();
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error sending message:', error);
   }
 }
 
@@ -289,7 +298,10 @@ function showNewMessageModal() {
     }
     
     try {
-      const users = await api.searchUsers(query);
+      const userData = await api.searchUsers(query);
+      // ✅ SAFE ARRAY CHECK
+      const users = Array.isArray(userData) ? userData : (userData.users || []);
+      
       const resultsDiv = document.getElementById('search-users-results');
       
       if (users.length === 0) {
@@ -299,11 +311,11 @@ function showNewMessageModal() {
           let img = user.profileImage || '';
           if (!img.startsWith('http')) img = `https://codealpha-socialapp-backend.onrender.com${img}`;
           return `
-            <div class="conversation-item" onclick="startNewConversation('${user._id}', '${user.username}', '${user.profileImage}')">
+            <div class="conversation-item" onclick="startNewConversation('${user._id}', '${user.username}', '${user.profileImage || ''}')">
               <div class="conversation-avatar"><img src="${img}" alt=""></div>
               <div class="conversation-info">
                 <div class="conversation-username">${user.username}</div>
-                <div class="conversation-preview">${user.fullName}</div>
+                <div class="conversation-preview">${user.fullName || ''}</div>
               </div>
             </div>
           `;
@@ -329,4 +341,4 @@ window.loadConversations = loadConversations;
 window.closeActiveChat = closeActiveChat;
 window.backToConversations = backToConversations;
 window.showNewMessageModal = showNewMessageModal;
-window.filterConversations = filterConversations
+window.filterConversations = filterConversations;

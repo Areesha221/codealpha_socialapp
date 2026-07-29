@@ -3,8 +3,6 @@ const API_URL = 'https://codealpha-socialapp-backend.onrender.com/api';
 // Helper: Get headers with Token
 function getAuthHeaders() {
   const token = localStorage.getItem('token');
-  console.log('Token:', token); // Debug ke liye
-
   const headers = {
     'Content-Type': 'application/json'
   };
@@ -45,7 +43,7 @@ async function getFeed() {
 }
 
 async function createPost(formData) {
-  // NOTE: FormData ke saath 'Content-Type' manually set NAHI karte, browser khud boundary set karta hai
+  // NOTE: FormData ke saath 'Content-Type' manually set NAHI karte
   const res = await fetch(`${API_URL}/posts`, {
     method: 'POST',
     headers: getAuthHeaders(),
@@ -65,6 +63,14 @@ async function deletePost(postId) {
 async function toggleLike(postId) {
   const res = await fetch(`${API_URL}/posts/${postId}/like`, {
     method: 'POST',
+    headers: getAuthHeaders()
+  });
+  return res.json();
+}
+
+async function unlikePost(postId) {
+  const res = await fetch(`${API_URL}/posts/${postId}/like`, {
+    method: 'DELETE',
     headers: getAuthHeaders()
   });
   return res.json();
@@ -157,6 +163,23 @@ async function sendMessage(receiverId, text) {
   return res.json();
 }
 
+// ==================== NOTIFICATIONS (NEWLY ADDED) ====================
+async function getNotifications() {
+  const res = await fetch(`${API_URL}/notifications`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
+  return res.json();
+}
+
+async function markNotificationAsRead(notificationId) {
+  const res = await fetch(`${API_URL}/notifications/${notificationId}/read`, {
+    method: 'POST',
+    headers: getAuthHeaders()
+  });
+  return res.json();
+}
+
 // ==================== EXPORT TO WINDOW ====================
 window.api = {
   register,
@@ -165,6 +188,7 @@ window.api = {
   createPost,
   deletePost,
   toggleLike,
+  unlikePost,
   getComments,
   addComment,
   getStories,
@@ -174,5 +198,7 @@ window.api = {
   toggleFollow,
   getConversations,
   getMessages,
-  sendMessage
+  sendMessage,
+  getNotifications,          
+  markNotificationAsRead    
 };

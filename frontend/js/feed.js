@@ -21,7 +21,11 @@ async function renderFeed() {
 
   // Load posts
   try {
-    const posts = await api.getFeed();
+    const postsData = await api.getFeed();
+    
+    // ✅ SAFE ARRAY CHECK: Handle both array and { posts: [] } responses
+    const posts = Array.isArray(postsData) ? postsData : (postsData.posts || []);
+    
     const container = document.getElementById('posts-container');
     
     if (!posts || posts.length === 0) {
@@ -42,7 +46,7 @@ async function renderFeed() {
     if (container) {
       container.innerHTML = `
         <div class="alert alert-danger">
-          <i class="bi bi-exclamation-triangle"></i> Error loading posts.
+          <i class="bi bi-exclamation-triangle"></i> Error loading posts. Please try logging in again.
         </div>
       `;
     }
@@ -53,9 +57,9 @@ function renderPostCard(post) {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isOwnPost = user._id === post.user._id;
   
-  // ✅ PROFILE PICTURE FIX
+  // ✅ PROFILE PICTURE & IMAGE URL FIX
   let imageUrl = post.image || '';
-  if (!imageUrl.startsWith('http')) {
+  if (imageUrl && !imageUrl.startsWith('http')) {
     imageUrl = `https://codealpha-socialapp-backend.onrender.com${imageUrl}`;
   }
   
@@ -67,7 +71,7 @@ function renderPostCard(post) {
   }
 
   return `
-    <article class="card mb-4 border-0" style="background: #000; border: 1px solid #262626 !important;">
+    <article class="card mb-4 border-0" style="background: #000; border: 1px solid #262626 !important;" data-post-id="${post._id}">
       <div class="card-header bg-transparent border-0 py-3 px-3 d-flex align-items-center">
         <img src="${profileImage}" class="rounded-circle me-3" style="width: 32px; height: 32px; object-fit: cover;">
         <div class="flex-grow-1">
@@ -89,7 +93,7 @@ function renderPostCard(post) {
       </div>
       
       <div class="position-relative">
-        <img src="${imageUrl}" class="card-img-top" alt="Post" style="max-height: 600px; object-fit: contain;">
+        <img src="${imageUrl}" class="card-img-top" alt="Post" style="max-height: 600px; object-fit: contain; width: 100%;">
       </div>
       
       <div class="card-body bg-transparent p-3">
@@ -149,6 +153,11 @@ async function handleCreatePost(e) {
   try {
     await api.createPost(formData);
     showToast('Post created successfully!', 'success');
+    
+    // Close modal if it exists
+    const modal = document.querySelector('.modal');
+    if (modal) modal.remove();
+    
     renderFeed();
   } catch (error) {
     showToast('Error creating post: ' + error.message, 'error');
@@ -162,7 +171,7 @@ async function handleLike(postId) {
     const postCard = document.querySelector(`[data-post-id="${postId}"]`);
     if (postCard) {
       const likeBtn = postCard.querySelector('.bi-heart, .bi-heart-fill');
-      const likesCount = postCard.querySelector('.text-white');
+      const likesCountEl = postCard.querySelector('.card-body .text-white'); // More specific selector
       
       if (data.isLiked) {
         likeBtn.classList.remove('bi-heart');
@@ -172,26 +181,28 @@ async function handleLike(postId) {
         likeBtn.classList.add('bi-heart');
       }
       
-      if (likesCount) {
-        likesCount.textContent = `${data.likesCount} likes`;
+      if (likesCountEl && data.likesCount !== undefined) {
+        likesCountEl.textContent = `${data.likesCount} likes`;
       }
     }
   } catch (error) {
+    console.error('Like error:', error);
     showToast('Error liking post', 'error');
   }
 }
 
 async function showComments(postId) {
   const commentsSection = document.getElementById(`comments-${postId}`);
-  
   if (!commentsSection) return;
   
   if (commentsSection.style.display === 'none') {
     try {
-      commentsSection.innerHTML = '<div class="text-center py-2"><div class="spinner-border spinner-border-sm"></div></div>';
+      commentsSection.innerHTML = '<div class="text-center py-2"><div class="spinner-border spinner-border-sm text-light"></div></div>';
       commentsSection.style.display = 'block';
       
-      const comments = await api.getComments(postId);
+      const commentsData = await api.getComments(postId);
+      // ✅ SAFE ARRAY CHECK
+      const comments = Array.isArray(commentsData) ? commentsData : (commentsData.comments || []);
       
       if (comments.length === 0) {
         commentsSection.innerHTML = '<p class="text-muted text-center">No comments yet</p>';
@@ -199,6 +210,7 @@ async function showComments(postId) {
         commentsSection.innerHTML = comments.map(comment => renderComment(comment)).join('');
       }
     } catch (error) {
+      console.error('Comment error:', error);
       commentsSection.innerHTML = '<p class="text-danger text-center">Error loading comments</p>';
     }
   } else {
@@ -246,6 +258,7 @@ async function handleAddComment(e, postId) {
     
     if (input) input.value = '';
   } catch (error) {
+    console.error('Add comment error:', error);
     showToast('Error adding comment', 'error');
   }
 }
@@ -258,11 +271,13 @@ async function handleDeletePost(postId) {
     showToast('Post deleted successfully', 'success');
     renderFeed();
   } catch (error) {
+    console.error('Delete error:', error);
     showToast('Error deleting post', 'error');
   }
 }
 
 function formatTime(dateString) {
+  if (!dateString) return '';
   const date = new Date(dateString);
   const now = new Date();
   const diffInSeconds = Math.floor((now - date) / 1000);
@@ -280,13 +295,13 @@ function loadFeed() {
 }
 
 function loadSuggestions() {
-  // Load suggestions for right sidebar
   const suggestionsList = document.getElementById('suggestions-list');
   if (!suggestionsList) return;
   
   suggestionsList.innerHTML = '<div class="text-center py-2"><small class="text-muted">Loading...</small></div>';
 }
 
+// Export all functions
 window.renderFeed = renderFeed;
 window.loadFeed = loadFeed;
 window.handleCreatePost = handleCreatePost;
