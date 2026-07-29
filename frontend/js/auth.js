@@ -146,7 +146,10 @@ async function handleLogin(e) {
       
       if (typeof showToast === 'function') showToast('Logged in successfully!', 'success');
       
-      goToFeed(userToSave);
+      // ✅ FIXED: Force reload instead of navigate
+      setTimeout(() => {
+        window.location.href = 'https://codealpha-socialapp.vercel.app';
+      }, 500);
       
     } else {
       if (typeof showToast === 'function') showToast(data.message || 'Login failed', 'error');
@@ -183,8 +186,10 @@ async function handleRegister(e) {
       
       if (typeof showToast === 'function') showToast('Account created!', 'success');
       
-      // ✅ FIXED: Auto-navigate to feed after registration
-      goToFeed(userToSave);
+      // ✅ FIXED: Force reload instead of navigate
+      setTimeout(() => {
+        window.location.href = 'https://codealpha-socialapp.vercel.app';
+      }, 500);
       
     } else {
       if (typeof showToast === 'function') showToast(data.message || 'Registration failed', 'error');

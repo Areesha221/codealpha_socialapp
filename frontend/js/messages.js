@@ -8,7 +8,7 @@ async function renderMessages() {
   const feedContent = document.getElementById('feed-content');
   const mainContent = document.getElementById('main-content');
   if (!feedContent) return;
-  
+
   if (mainContent) {
     mainContent.classList.add('messages-active');
     mainContent.classList.remove('profile-active', 'explore-active', 'search-active', 'reels-active');
@@ -97,15 +97,18 @@ async function loadNotes() {
     const convData = await api.getConversations();
     // ✅ SAFE ARRAY CHECK
     const conversations = Array.isArray(convData) ? convData : (convData.conversations || []);
-    
+
     const notesWrapper = document.getElementById('notes-wrapper');
     if (!notesWrapper || !conversations) return;
-    
+
     const notesHtml = conversations.map(conv => {
       let userImg = conv.user?.profileImage || '';
       if (!userImg.startsWith('http')) userImg = `https://codealpha-socialapp-backend.onrender.com${userImg}`;
+      if (!userImg || userImg.includes('via.placeholder.com')) {
+        userImg = `https://ui-avatars.com/api/?name=${conv.user.username}&background=262626&color=8e8e8e&size=150`;
+      }
       const note = localStorage.getItem(`note_${conv.user?._id}`) || '';
-      
+
       return `
         <div class="note-item" onclick="openChat('${conv.user._id}', '${conv.user.username}', '${conv.user.profileImage || ''}', '${conv.user.isOnline || false}')">
           ${note ? `
@@ -117,7 +120,7 @@ async function loadNotes() {
         </div>
       `;
     }).join('');
-    
+
     notesWrapper.innerHTML = notesHtml;
   } catch (error) {
     console.error('Error loading notes:', error);
@@ -129,20 +132,20 @@ async function loadConversations() {
     const convData = await api.getConversations();
     // ✅ SAFE ARRAY CHECK
     const conversations = Array.isArray(convData) ? convData : (convData.conversations || []);
-    
+
     const container = document.getElementById('conversations-list');
     if (!container) return;
-    
+
     if (!conversations || conversations.length === 0) {
       container.innerHTML = `<div class="text-center py-5 text-muted">No conversations yet</div>`;
       return;
     }
-    
+
     container.innerHTML = conversations.map(conv => {
       let userImg = conv.user?.profileImage || '';
       if (!userImg.startsWith('http')) userImg = `https://codealpha-socialapp-backend.onrender.com${userImg}`;
       const isOnline = conv.user?.isOnline || false;
-      
+
       return `
         <div class="conversation-item" data-username="${(conv.user?.username || '').toLowerCase()}"
              onclick="openChat('${conv.user._id}', '${conv.user.username}', '${conv.user.profileImage || ''}', '${isOnline}')">
@@ -174,22 +177,22 @@ function filterConversations(query) {
 
 async function openChat(userId, username, profileImage, isOnline) {
   currentChat = userId;
-  
+
   document.getElementById('empty-state').style.display = 'none';
   document.getElementById('active-chat').style.display = 'flex';
-  
+
   const sidebar = document.getElementById('conversations-sidebar');
   if (sidebar && window.innerWidth <= 768) sidebar.style.display = 'none';
-  
+
   document.getElementById('chat-username').textContent = username;
-  
+
   let img = profileImage || '';
   if (!img.startsWith('http')) img = `https://codealpha-socialapp-backend.onrender.com${img}`;
   document.getElementById('chat-user-avatar').src = img;
-  
+
   const statusDot = document.getElementById('chat-user-status');
   const statusText = document.getElementById('chat-status');
-  
+
   if (isOnline === 'true' || isOnline === true) {
     statusDot.className = 'status-indicator online';
     statusText.textContent = 'Active now';
@@ -197,9 +200,9 @@ async function openChat(userId, username, profileImage, isOnline) {
     statusDot.className = 'status-indicator offline';
     statusText.textContent = 'Offline';
   }
-  
+
   await loadMessages(userId);
-  
+
   if (messagePollingInterval) clearInterval(messagePollingInterval);
   messagePollingInterval = setInterval(() => loadMessages(userId), 3000);
 }
@@ -209,21 +212,21 @@ async function loadMessages(userId) {
     const msgData = await api.getMessages(userId);
     // ✅ SAFE ARRAY CHECK
     const messages = Array.isArray(msgData) ? msgData : (msgData.messages || []);
-    
+
     const container = document.getElementById('messages-container');
     if (!container) return;
-    
+
     if (!messages || messages.length === 0) {
       container.innerHTML = `<div class="text-center text-muted py-5">Say hi! 👋</div>`;
       return;
     }
-    
+
     const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-    
+
     container.innerHTML = messages.map(msg => {
       const isSender = msg.sender?._id === currentUser._id;
-      const time = new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-      
+      const time = new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
       return `
         <div class="message-wrapper ${isSender ? 'sent' : 'received'}">
           <div class="message-bubble">
@@ -233,7 +236,7 @@ async function loadMessages(userId) {
         </div>
       `;
     }).join('');
-    
+
     container.scrollTop = container.scrollHeight;
   } catch (error) {
     console.error('Error loading messages:', error);
@@ -245,7 +248,7 @@ async function handleSendMessage(e) {
   const input = document.getElementById('message-input');
   const text = input ? input.value.trim() : '';
   if (!text || !currentChat) return;
-  
+
   try {
     await api.sendMessage(currentChat, text);
     input.value = '';
@@ -289,21 +292,21 @@ function showNewMessageModal() {
     </div>
   `;
   document.body.appendChild(modal);
-  
+
   document.getElementById('search-users-input').addEventListener('input', async (e) => {
     const query = e.target.value.trim();
     if (query.length < 2) {
       document.getElementById('search-users-results').innerHTML = '';
       return;
     }
-    
+
     try {
       const userData = await api.searchUsers(query);
       // ✅ SAFE ARRAY CHECK
       const users = Array.isArray(userData) ? userData : (userData.users || []);
-      
+
       const resultsDiv = document.getElementById('search-users-results');
-      
+
       if (users.length === 0) {
         resultsDiv.innerHTML = '<p class="text-muted text-center py-3">No users found</p>';
       } else {
@@ -325,7 +328,7 @@ function showNewMessageModal() {
       console.error('Search error:', error);
     }
   });
-  
+
   window.startNewConversation = (userId, username, profileImage) => {
     modal.remove();
     openChat(userId, username, profileImage, 'false');
