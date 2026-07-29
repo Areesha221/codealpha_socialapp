@@ -1,6 +1,10 @@
 var socket = null;
-const BACKEND_URL = 'https://codealpha-socialapp-backend.onrender.com';
 let currentPage = 'feed';
+
+// ✅ SAFE DECLARATION: Prevents "already been declared" errors
+if (typeof BACKEND_URL === 'undefined') {
+    var BACKEND_URL = 'https://codealpha-socialapp-backend.onrender.com';
+}
 
 // Save current page
 function saveCurrentPage(page) {
@@ -23,8 +27,9 @@ function navigate(page, param = null) {
 
   saveCurrentPage(page);
 
+  // Update active nav state
   document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-  const activeNav = document.querySelector(`.nav-item[onclick*="navigate('${page}'"]`);
+  const activeNav = document.querySelector(`.nav-item[onclick*="navigate('${page}')"]`);
   if (activeNav) activeNav.classList.add('active');
 
   const feedContent = document.getElementById('feed-content');
@@ -99,14 +104,14 @@ function navigate(page, param = null) {
       if (mainContent) mainContent.classList.add('search-active');
       if (rightSidebar) rightSidebar.style.display = 'none';
       if (storiesSection) storiesSection.style.display = 'none';
-      showCreatePostModal();
+      if (typeof showCreatePostModal === 'function') showCreatePostModal();
       break;
     case 'reels':
       if (feedContent) feedContent.innerHTML = '';
       if (mainContent) mainContent.classList.add('reels-active');
       if (rightSidebar) rightSidebar.style.display = 'none';
       if (storiesSection) storiesSection.style.display = 'none';
-      renderReels();
+      if (typeof renderReels === 'function') renderReels();
       break;
     case 'saved':
       if (feedContent) feedContent.innerHTML = '';
@@ -130,7 +135,7 @@ function navigate(page, param = null) {
 
 function updateNavigation() {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  if (!user) return;
+  if (!user || !user.username) return;
 
   let profileImg = user.profileImage || '';
   if (!profileImg.startsWith('http')) profileImg = `${BACKEND_URL}${profileImg}`;
@@ -145,7 +150,7 @@ function updateNavigation() {
   if (navImgMobile) navImgMobile.src = profileImg;
   if (sidebarImg) sidebarImg.src = profileImg;
   if (sidebarUsername) sidebarUsername.textContent = user.username;
-  if (sidebarFullname) sidebarFullname.textContent = user.fullName;
+  if (sidebarFullname) sidebarFullname.textContent = user.fullName || user.username;
 }
 
 function handleLogout() {
@@ -155,6 +160,7 @@ function handleLogout() {
     localStorage.removeItem('currentPage');
     localStorage.removeItem('addingNewAccount');
     window.location.reload();
+    navigate('login');
   }
 }
 
@@ -163,7 +169,7 @@ function initSocket() {
   if (!user || !user._id) return;
   if (socket && socket.connected) return;
 
-  socket = io('https://codealpha-socialapp-backend.onrender.com');
+  socket = io(BACKEND_URL);
   socket.on('connect', () => {
     console.log('✅ Connected to Socket.IO');
     socket.emit('join', user._id);
@@ -181,20 +187,25 @@ function showNotificationToast(notification) {
     case 'follow': message = 'started following you'; break;
     default: message = 'has a notification';
   }
-  showToast(`${notification.sender.username} ${message}`, 'info');
+  showToast(`${notification.sender?.username || 'Someone'} ${message}`, 'info');
 }
 
 function showToast(message, type = 'success') {
-  const toast = document.getElementById('toast');
+  const toastEl = document.getElementById('toast');
+  if (!toastEl) return;
+  
   const toastTitle = document.getElementById('toast-title');
   const toastBody = document.getElementById('toast-body');
-  toastTitle.textContent = type === 'success' ? 'Success' : type === 'error' ? 'Error' : 'Info';
-  toastBody.textContent = message;
-  new bootstrap.Toast(toast).show();
+  
+  if (toastTitle) toastTitle.textContent = type === 'success' ? 'Success' : type === 'error' ? 'Error' : 'Info';
+  if (toastBody) toastBody.textContent = message;
+  
+  const toast = new bootstrap.Toast(toastEl);
+  toast.show();
 }
 
 // ==========================================
-// WORKING ACCOUNT SWITCHER & ADD ACCOUNT
+// ACCOUNT SWITCHER & ADD ACCOUNT
 // ==========================================
 function showAccountSwitcher() {
   const accounts = JSON.parse(localStorage.getItem('accounts') || '[]');
@@ -221,10 +232,10 @@ function showAccountSwitcher() {
               <div class="list-group-item list-group-item-action bg-dark text-white border-secondary d-flex align-items-center justify-content-between" 
                    onclick="switchToAccount('${acc.username}')">
                 <div class="d-flex align-items-center">
-                  <img src="${acc.profileImage || ''}" class="rounded-circle me-2" style="width:32px;height:32px;object-fit:cover;">
+                  <img src="${acc.profileImage || 'https://via.placeholder.com/32'}" class="rounded-circle me-2" style="width:32px;height:32px;object-fit:cover;">
                   <div>
                     <div class="fw-bold">${acc.username}</div>
-                    <div class="text-muted small">${acc.fullName}</div>
+                    <div class="text-muted small">${acc.fullName || ''}</div>
                   </div>
                 </div>
                 ${acc.username === currentUser.username ? '<span class="badge bg-primary">Current</span>' : ''}
@@ -246,7 +257,6 @@ function showAccountSwitcher() {
 }
 
 function addNewAccount() {
-  // Save current user to accounts list before navigating to login
   saveCurrentUserToAccounts();
   localStorage.setItem('addingNewAccount', 'true');
   closeModal(document.querySelector('.modal'));
@@ -257,7 +267,6 @@ function saveCurrentUserToAccounts() {
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
   if (currentUser.username) {
     let accounts = JSON.parse(localStorage.getItem('accounts') || '[]');
-    // Remove if already exists to avoid duplicates
     accounts = accounts.filter(acc => acc.username !== currentUser.username);
     accounts.push(currentUser);
     localStorage.setItem('accounts', JSON.stringify(accounts));
@@ -277,7 +286,6 @@ function switchToAccount(username) {
   }
 }
 
-// Call this function in auth.js after successful login/register
 window.finalizeAccountSwitch = function(newUser) {
   const isAdding = localStorage.getItem('addingNewAccount') === 'true';
   if (isAdding) {
@@ -291,18 +299,15 @@ window.finalizeAccountSwitch = function(newUser) {
 
 function closeModal(element) {
   const modal = element.closest('.modal');
-  if (modal) {
-    modal.remove();
-  }
+  if (modal) modal.remove();
 }
 
 // ==========================================
-// MOBILE HAMBURGER MENU (TOGGLE WORKING)
+// MOBILE HAMBURGER MENU
 // ==========================================
 let menuModal = null;
 
 function showMobileMenu() {
-  // If menu is already open, close it (Toggle functionality)
   if (menuModal) {
     closeMenu();
     return;
@@ -341,12 +346,6 @@ function showMobileMenu() {
             <button class="list-group-item list-group-item-action bg-dark text-white border-secondary" onclick="showToast('Settings coming soon', 'info'); closeMenu()">
               <i class="bi bi-gear me-2"></i>Settings
             </button>
-            <button class="list-group-item list-group-item-action bg-dark text-white border-secondary" onclick="showToast('Privacy coming soon', 'info'); closeMenu()">
-              <i class="bi bi-shield-lock me-2"></i>Privacy
-            </button>
-            <button class="list-group-item list-group-item-action bg-dark text-white border-secondary" onclick="showToast('Blocked users coming soon', 'info'); closeMenu()">
-              <i class="bi bi-slash-circle me-2"></i>Blocked
-            </button>
             <button class="list-group-item list-group-item-action bg-dark text-danger border-secondary" onclick="handleLogout()">
               <i class="bi bi-box-arrow-right me-2"></i>Log out
             </button>
@@ -381,37 +380,14 @@ function toggleAppearance() {
   
   if (isLightMode) {
     document.body.classList.remove('light-mode');
-    document.documentElement.style.setProperty('--bg-primary', '#000000');
-    document.documentElement.style.setProperty('--bg-secondary', '#121212');
-    document.documentElement.style.setProperty('--bg-tertiary', '#262626');
-    document.documentElement.style.setProperty('--text-primary', '#ffffff');
-    document.documentElement.style.setProperty('--text-secondary', '#8e8e8e');
-    document.documentElement.style.setProperty('--border-color', '#262626');
-    
-    document.querySelectorAll('.instagram-theme, .sidebar-navigation, .main-content, .card, .modal-content, .profile-page-container, .messages-layout, .conversations-sidebar, .chat-area').forEach(el => {
-      el.style.backgroundColor = '#000000';
-      el.style.color = '#ffffff';
-    });
-    
     localStorage.setItem('theme', 'dark');
     showToast('Switched to dark mode', 'success');
   } else {
     document.body.classList.add('light-mode');
-    document.documentElement.style.setProperty('--bg-primary', '#ffffff');
-    document.documentElement.style.setProperty('--bg-secondary', '#fafafa');
-    document.documentElement.style.setProperty('--bg-tertiary', '#efefef');
-    document.documentElement.style.setProperty('--text-primary', '#262626');
-    document.documentElement.style.setProperty('--text-secondary', '#8e8e8e');
-    document.documentElement.style.setProperty('--border-color', '#dbdbdb');
-    
-    document.querySelectorAll('.instagram-theme, .sidebar-navigation, .main-content, .card, .modal-content, .profile-page-container, .messages-layout, .conversations-sidebar, .chat-area').forEach(el => {
-      el.style.backgroundColor = '#ffffff';
-      el.style.color = '#262626';
-    });
-    
     localStorage.setItem('theme', 'light');
     showToast('Switched to light mode', 'success');
   }
+  // CSS variables handle the rest automatically!
 }
 
 function showAllSuggestions() {
@@ -455,7 +431,7 @@ async function loadAllSuggestions() {
             <img src="${img}" class="rounded-circle me-3" style="width:44px;height:44px;object-fit:cover;">
             <div>
               <div class="text-white fw-bold">${user.username}</div>
-              <div class="text-muted small">${user.fullName}</div>
+              <div class="text-muted small">${user.fullName || ''}</div>
             </div>
           </div>
           <button class="btn btn-primary btn-sm" onclick="navigate('profile', '${user._id}')">View</button>
@@ -507,21 +483,21 @@ async function handleGlobalSearch(query) {
       <h5 class="text-white mb-3">Users</h5>
       <div class="list-group">
         ${users.map(user => {
-      let img = user.profileImage || '';
-      if (!img.startsWith('http')) img = `https://codealpha-socialapp-backend.onrender.com${img}`;
-      return `
+          let img = user.profileImage || '';
+          if (!img.startsWith('http')) img = `${BACKEND_URL}${img}`;
+          return `
             <div class="list-group-item list-group-item-action bg-dark border-secondary text-white p-3 mb-2" 
                  style="cursor:pointer;" onclick="navigate('profile', '${user._id}')">
               <div class="d-flex align-items-center">
                 <img src="${img}" class="rounded-circle me-3" style="width:50px;height:50px;object-fit:cover;">
                 <div>
                   <div class="fw-bold">${user.username}</div>
-                  <div class="text-muted small">${user.fullName}</div>
+                  <div class="text-muted small">${user.fullName || ''}</div>
                 </div>
               </div>
             </div>
           `;
-    }).join('')}
+        }).join('')}
       </div>
     `;
   } catch (error) {
@@ -682,7 +658,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Export all functions
+// ✅ EXPORT ALL FUNCTIONS TO WINDOW
 window.navigate = navigate;
 window.showToast = showToast;
 window.initSocket = initSocket;
@@ -706,4 +682,3 @@ window.showAccountSwitcher = showAccountSwitcher;
 window.switchToAccount = switchToAccount;
 window.closeModal = closeModal;
 window.addNewAccount = addNewAccount;
-window.finalizeAccountSwitch = finalizeAccountSwitch;
