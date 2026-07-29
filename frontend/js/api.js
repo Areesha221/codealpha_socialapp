@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://codealpha-socialapp-backend.onrender.com/api';
 
 // API Helper Functions
 const api = {
