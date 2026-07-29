@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-// Generate JWT Token
+// Generate JWT Token (Consistent payload: { id })
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
 };
@@ -39,7 +39,7 @@ exports.register = async (req, res) => {
       email: user.email,
       fullName: user.fullName,
       profileImage: user.profileImage,
-      token: generateToken(user._id)
+      token: generateToken(user._id) // ✅ Consistent
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -70,7 +70,8 @@ exports.login = async (req, res) => {
     user.lastSeen = Date.now();
     await user.save();
     
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    // ✅ FIXED: Use the same generateToken function to keep payload consistent { id }
+    const token = generateToken(user._id);
     
     res.json({
       token,
@@ -89,13 +90,16 @@ exports.login = async (req, res) => {
   }
 };
 
-// Add logout endpoint
+// @desc    Logout user
+// @route   POST /api/auth/logout
 exports.logout = async (req, res) => {
   try {
-    await User.findByIdAndUpdate(req.user._id, {
-      isOnline: false,
-      lastSeen: Date.now()
-    });
+    if (req.user && req.user._id) {
+      await User.findByIdAndUpdate(req.user._id, {
+        isOnline: false,
+        lastSeen: Date.now()
+      });
+    }
     res.json({ message: 'Logged out successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -106,7 +110,11 @@ exports.logout = async (req, res) => {
 // @route   GET /api/auth/me
 exports.getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('-password');
+    // req.user.id ab perfectly kaam karega kyunki token mein { id } hai
+    const user = await User.findById(req.user.id || req.user._id).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
     res.json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });

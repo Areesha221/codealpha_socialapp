@@ -86,7 +86,7 @@ function renderRegister() {
 function togglePassword(inputId, button) {
   const input = document.getElementById(inputId);
   const icon = button.querySelector('i');
-
+  
   if (input.type === 'password') {
     input.type = 'text';
     icon.classList.remove('bi-eye');
@@ -98,47 +98,56 @@ function togglePassword(inputId, button) {
   }
 }
 
+// ✅ FIXED: Safe navigation helper
+function goToFeed(userToSave) {
+  if (typeof window.finalizeAccountSwitch === 'function') {
+    window.finalizeAccountSwitch(userToSave);
+  } else {
+    // Wait longer for app.js to load
+    setTimeout(() => {
+      if (typeof window.navigate === 'function') {
+        window.navigate('feed');
+        if (typeof window.updateNavigation === 'function') {
+          window.updateNavigation();
+        }
+      } else {
+        // Fallback: reload page, app.js will handle navigation
+        window.location.reload();
+      }
+    }, 500);
+  }
+}
+
 async function handleLogin(e) {
   e.preventDefault();
   const username = document.getElementById('login-username').value;
   const password = document.getElementById('login-password').value;
-
+  
   try {
     const response = await fetch('https://codealpha-socialapp-backend.onrender.com/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+      body: JSON.stringify({ 
         username: username,
         email: username,
-        password: password
+        password: password 
       })
     });
-
+    
     const data = await response.json();
-
+    
     if (response.ok) {
       const userToSave = data.user || data;
-
+      
       if (data.token) {
         localStorage.setItem('token', data.token);
       }
       localStorage.setItem('user', JSON.stringify(userToSave));
-
+      
       if (typeof showToast === 'function') showToast('Logged in successfully!', 'success');
-
-      // ✅ DIRECT NAVIGATION - setTimeout hataya
-      setTimeout(() => {
-        if (typeof window.navigate === 'function') {
-          window.navigate('feed');
-        } else {
-          // Fallback: manually reload
-          window.location.reload();
-        }
-        if (typeof window.updateNavigation === 'function') {
-          window.updateNavigation();
-        }
-      }, 500);
-
+      
+      goToFeed(userToSave);
+      
     } else {
       if (typeof showToast === 'function') showToast(data.message || 'Login failed', 'error');
     }
@@ -154,36 +163,29 @@ async function handleRegister(e) {
   const fullName = document.getElementById('register-fullname').value;
   const username = document.getElementById('register-username').value;
   const password = document.getElementById('register-password').value;
-
+  
   try {
-    // ✅ FIXED: Updated to Render Production URL
     const response = await fetch('https://codealpha-socialapp-backend.onrender.com/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, fullName, username, password })
     });
-
+    
     const data = await response.json();
-
+    
     if (response.ok) {
       const userToSave = data.user || data;
-
+      
       if (data.token) {
         localStorage.setItem('token', data.token);
       }
       localStorage.setItem('user', JSON.stringify(userToSave));
-
+      
       if (typeof showToast === 'function') showToast('Account created!', 'success');
-
-      if (typeof window.finalizeAccountSwitch === 'function') {
-        window.finalizeAccountSwitch(userToSave);
-      } else {
-        setTimeout(() => {
-          if (typeof navigate === 'function') navigate('feed');
-          if (typeof updateNavigation === 'function') updateNavigation();
-        }, 100);
-      }
-
+      
+      // ✅ FIXED: Auto-navigate to feed after registration
+      goToFeed(userToSave);
+      
     } else {
       if (typeof showToast === 'function') showToast(data.message || 'Registration failed', 'error');
     }
@@ -199,3 +201,4 @@ window.renderRegister = renderRegister;
 window.togglePassword = togglePassword;
 window.handleLogin = handleLogin;
 window.handleRegister = handleRegister;
+window.goToFeed = goToFeed;
