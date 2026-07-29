@@ -1,10 +1,11 @@
 var socket = null;
 let currentPage = 'feed';
 
-// ✅ SAFE DECLARATION: Prevents "already been declared" errors
-if (typeof BACKEND_URL === 'undefined') {
-    var BACKEND_URL = 'https://codealpha-socialapp-backend.onrender.com';
+// ✅ 100% SAFE - Window object use karo, kabhi error nahi dega
+if (!window.SOCIALAPP_BACKEND_URL) {
+    window.SOCIALAPP_BACKEND_URL = 'https://codealpha-socialapp-backend.onrender.com';
 }
+const BACKEND_URL = window.SOCIALAPP_BACKEND_URL;
 
 // Save current page
 function saveCurrentPage(page) {
