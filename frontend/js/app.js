@@ -1,11 +1,8 @@
 var socket = null;
 let currentPage = 'feed';
 
-// ✅ 100% SAFE - Window object use karo, kabhi error nahi dega
-if (!window.SOCIALAPP_BACKEND_URL) {
-    window.SOCIALAPP_BACKEND_URL = 'https://codealpha-socialapp-backend.onrender.com';
-}
-const BACKEND_URL = window.SOCIALAPP_BACKEND_URL;
+// ✅ CHANGE 1: 'const' ko 'var' mein badal do
+var BACKEND_URL = 'https://codealpha-socialapp-backend.onrender.com';
 
 // Save current page
 function saveCurrentPage(page) {
