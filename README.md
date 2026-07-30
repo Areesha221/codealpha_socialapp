@@ -5,11 +5,6 @@
 
 A full-stack social media web application built during the **CodeAlpha Internship**. It features an Instagram-inspired UI with real-time messaging, stories, highlights, and a fully responsive design that works seamlessly across mobile, tablet, and desktop devices.
 
-![GitHub](https://img.shields.io/badge/GitHub-Repository-blue)
-![MongoDB](https://img.shields.io/badge/MongoDB-Database-green)
-![Node.js](https://img.shields.io/badge/Node.js-Backend-green)
-![License](https://img.shields.io/badge/License-MIT-blue)
-
 ---
 
 ## ✨ Features
